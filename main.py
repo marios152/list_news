@@ -19,10 +19,6 @@ def printTimeDate():
     print("Date: " + dateTimeNow.strftime("%d:%b:%Y"))
 
 
-def open_link(url):
-    webbrowser.open(url)
-
-
 class News:
     def __init__(self, site):
         self.site = site
@@ -63,10 +59,17 @@ class News:
 class MyGUI:
     def __init__(self):
         self.root = tk.Tk()
+        self.news = News(NEWS_SITE1)
 
-        news = News(NEWS_SITE1)
-        news_list = news.prepare_titles_for_gui()
+        self.setup_menu()
+        self.setup_window()
+        self.load_news()
+        self.setup_refresh_button()
 
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.root.mainloop()
+
+    def setup_menu(self):
         self.menubar = tk.Menu(self.root)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Close", command=self.on_closing)
@@ -84,7 +87,8 @@ class MyGUI:
         self.menubar.add_cascade(menu=self.helpmenu, label="Help")
         self.root.config(menu=self.menubar)
 
-        self.root.geometry("500x800")
+    def setup_window(self):
+        self.root.geometry("500x900")
         self.root.title("List the News")
 
         self.label = tk.Label(self.root, text="List News", font=("Arial", 18))
@@ -93,24 +97,23 @@ class MyGUI:
         self.label2 = tk.Label(self.root, text="Listing...", font=("Arial", 18))
         self.label2.pack(padx=20, pady=20)
 
-        # load the news
+    def load_news(self):
+        news_list = self.news.prepare_titles_for_gui()
         label_widgets = []
         for item in news_list:
             title = item["title_text"]
             url = item["title_url"]
             self.label3 = tk.Label(self.root, text=title, fg="blue", cursor="hand2")
             self.label3.pack(anchor="w")
-            self.label3.bind("<Button-1>", lambda event, url=url: open_link(url))
+            self.label3.bind("<Button-1>", lambda event, url=url: self.open_link(url))
 
             label_widgets.append(self.label3)
 
+    def setup_refresh_button(self):
         self.button = tk.Button(
             self.root, text="Refresh", font=("Arial", 12), command=self.refresh
         )
         self.button.pack(padx=10, pady=10)
-
-        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.root.mainloop()
 
     def refresh(self):
         print("refresh")
@@ -121,15 +124,18 @@ class MyGUI:
         else:
             print("refresh news listing")
 
-    def on_closing(self):
-        if messagebox.askyesno(title="Quit?", message="Do you really want to quit?"):
-            self.root.destroy()
+    def open_link(self, url):
+        webbrowser.open(url)
 
     def show_settings(self):
         messagebox.showinfo(title="Settings", message="Setting window")
 
     def show_about(self):
         messagebox.showinfo(title="About", message="About window")
+
+    def on_closing(self):
+        if messagebox.askyesno(title="Quit?", message="Do you really want to quit?"):
+            self.root.destroy()
 
 
 MyGUI()
